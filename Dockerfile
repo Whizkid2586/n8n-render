@@ -1,17 +1,24 @@
-FROM n8nio/n8n:latest
+FROM python:3.11-slim
 
-# Switch to root to install system dependencies
-USER root
-
-# Update system package list and install Python3, pip, and FFmpeg
+# Install system dependencies (Node.js, npm, and FFmpeg)
 RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
+    curl \
     ffmpeg \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install edge-tts globally via Python
-RUN pip3 install --no-cache-dir --break-system-packages edge-tts
+# Install n8n globally via npm
+RUN npm install -g n8n
 
-# Switch back to the standard n8n user for security
-USER node
+# Install edge-tts globally via Python pip
+RUN pip install --no-cache-dir edge-tts
+
+# Expose n8n port
+EXPOSE 5678
+
+# Set working directory
+WORKDIR /data
+
+# Start n8n
+CMD ["n8n"]
